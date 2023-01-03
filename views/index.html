@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome</title>
+  <!-- Bootstrap files -->
+  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/bootstrap/icons/bootstrap-icons.css">
+  <script src="/bootstrap/js/bootstrap.min.js"></script>
+  <!-- jquery file -->
+  <script src="/jquery/jquery.min.js"></script>
+
+  <!-- custom styles -->
+  <style>
+    #edit_emp_div {
+      display: none;
+    }
+
+    #msg_div {
+      display: none;
+      position: fixed;
+      top: 10px;
+      right: 10px;
+    }
+
+    .icon-btn {
+      cursor: pointer;
+      display: inline-block;
+    }
+  </style>
+
+  <!-- jquery script -->
+  <script>
+    // backend api
+    const api = 'http://localhost:5000/api/books'
+
+    $().ready(init)
+    function init() {
+      generateTableData()
+    }
+
+
+    function showMessage(msg, err = false) {
+      $('#msg_div').removeClass('text-bg-danger text-bg-info')
+      if (err) $('#msg_div').addClass('text-bg-danger')
+      else $('#msg_div').addClass('text-bg-info')
+      $('#msg_div .toast-body').text(msg)
+      $('#msg_div').show()
+    }
+
+    function closeMessage() {
+      $('#msg_div').hide()
+    }
+
+
+    function generateTableData() {
+
+      $.get(api, res => {
+        $('table>tbody').html('') // cleaning previously populated data
+
+        res.data.forEach(book => {
+
+          $('table>tbody').append(`
+            <tr>
+              <td>${book.bookId}</td>
+              <td>${book.title}</td>
+              <td>${book.author}</td>
+              <td>${book.price}</td>
+              <td>
+                <i class="bi bi-pencil-square text-primary icon-btn" onClick='onEdit(event)'></i>
+                |
+                <i class="bi bi-trash text-danger icon-btn" onClick='onDelete(event)'></i>
+              </td>
+            </tr>
+          `)
+        });
+      })
+    }
+
+
+    function onDelete(e) {
+
+      if (!confirm('Do you want to delete this entry?')) return
+
+      // extracting the id from the table
+      const id = e.target.parentNode.parentNode.childNodes[1].textContent
+
+      // make a delete call to the back-end
+      $.ajax({
+        url: `${api}/${id}`,
+        method: 'delete',
+        success: function (res) {
+          console.log(res)
+          // re-populate the table
+          generateTableData()
+          showMessage('Record deleted!')
+        }
+      })
+    }
+
+
+    function onEdit(e) {
+      // showing the hidden editing form
+      $('#edit_emp_div').slideDown(200)
+
+      // extracting the id from the table
+      const tr = e.target.parentNode.parentNode
+      const id = tr.childNodes[1].textContent
+      const title = tr.childNodes[3].textContent
+      const author = tr.childNodes[5].textContent
+      const price = tr.childNodes[7].textContent
+
+      $('#edit_id').val(id)
+      $('#edit_title').val(title)
+      $('#edit_author').val(author)
+      $('#edit_price').val(price)
+    }
+  </script>
+</head>
+
+<body>
+  <!-- message div ----------------------------------------------------------------------------------------------------->
+  <div id="msg_div" class="toast align-items-center border-0">
+    <div class="d-flex">
+      <div class="toast-body"></div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" onclick="closeMessage()"></button>
+    </div>
+  </div>
+  <div class="container-lg text-bg-light min-vh-100">
+    <div class="row">
+      <h1 class="text-center p-5 text-bg-primary">Books Listing System</h1>
+    </div>
+    <div class="row">
+      <div class="col-12 col-lg-8">
+        <h3 class="text-bg-info p-2 mb-4">Book List:</h3>
+        <table class="table table-striped border">
+          <thead>
+            <tr>
+              <th>id</th>
+              <th>Title</th>
+              <th>Author</th>
+              <th>Price</th>
+              <th>Options</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <!-- form for new employee ----------------------------------------------------------------------------------------------------->
+      <div class="col-12 col-lg-4">
+        <div class="mb-5">
+          <h3 class="text-bg-success p-2 mb-4">New Book:</h3>
+          <form action="#" method="post">
+            <div class="mb-3">
+              <input type="number" name="id" id="new_id" placeholder="Id" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <input type="text" name="title" id="new_title" placeholder="Title" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <input type="text" name="author" id="new_author" placeholder="Author" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <input type="number" name="price" id="new_price" placeholder="Price" class="form-control" />
+            </div>
+            <input type="submit" value="Add" class="w-100 btn btn-outline-primary" />
+          </form>
+        </div>
+        <div id="edit_emp_div">
+          <h3 class="text-bg-warning p-2 mb-4">Edit Book:</h3>
+          <form action="#" method="post">
+            <div class="mb-3">
+              <input type="number" name="id" id="edit_id" placeholder="Id" class="form-control" disabled />
+            </div>
+            <div class="mb-3">
+              <input type="text" name="title" id="edit_title" placeholder="Title" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <input type="text" name="author" id="edit_author" placeholder="Author" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <input type="number" name="price" id="edit_price" placeholder="Price" class="form-control" />
+            </div>
+            <input type="submit" value="Update" class="w-100 btn btn-outline-primary" />
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- jquery script -->
+  <script>
+    $().ready(onReady);
+    function onReady() {
+
+      // function for adding a new employee
+      $('form').first().submit(function (e) {
+        e.preventDefault()
+
+        // take the input values and send to the back-end
+        const book = {
+          id: $(this[0]).val(),
+          title: $(this[1]).val(),
+          author: $(this[2]).val(),
+          price: $(this[3]).val()
+        }
+
+        // making post request to the back-end with emp{}
+        $.post(`${api}/new`, book, res => {
+          generateTableData()
+          console.log(res)
+
+          // resetting the input values to blank
+          $(this[0]).val('')
+          $(this[1]).val('')
+          $(this[2]).val('')
+          $(this[3]).val('')
+
+          showMessage('Book added successfully!')
+        }).fail(function (err) {
+          // console.log(err.responseJSON)
+          showMessage(err.responseJSON.message, true)
+        })
+      })
+
+
+      // function for updating an existing employee
+      $('form').eq(1).submit(function (e) {
+        e.preventDefault()
+        console.log('update')
+
+        // take the input values and send to the back-end
+        const emp = {
+          id: $(this[0]).val(),
+          title: $(this[1]).val(),
+          author: $(this[2]).val(),
+          price: $(this[3]).val()
+        }
+
+        // making post request to the back-end with emp{}
+        $.ajax({
+          url: `${api}/update`,
+          method: 'PUT',
+          data: emp,
+          success: res => {
+            generateTableData()
+
+            // resetting the input values to blank
+            $(this[0]).val('')
+            $(this[1]).val('')
+            $(this[2]).val('')
+            $(this[3]).val('')
+
+            // hiding the editing form
+            $('#edit_emp_div').slideUp()
+            showMessage('Book Updated successfully!')
+          }
+        }).fail(function (err) {
+          // console.log(err.responseJSON)
+          showMessage(err.responseJSON.message, true)
+        })
+      })
+
+    }
+  </script>
+</body>
+
+</html>

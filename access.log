@@ -1,0 +1,2 @@
+::ffff:127.0.0.1 - - [01/Jan/2023:14:41:23 +0000] "GET /books HTTP/1.1" 200 - "-" "Thunder Client (https://www.thunderclient.com)"
+::ffff:127.0.0.1 - - [01/Jan/2023:14:42:23 +0000] "GET /books HTTP/1.1" 200 19 "-" "Thunder Client (https://www.thunderclient.com)"
